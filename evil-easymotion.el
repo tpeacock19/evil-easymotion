@@ -142,11 +142,17 @@
               (when initial-point
                 (goto-char (funcall initial-point)))
               (cl-destructuring-bind (beg . end)
-                  (if scope
-                      (bounds-of-thing-at-point scope)
-                    (cons (point-min)
-                          (point-max)))
-
+                  (pcase scope
+                    ((pred consp)
+                     scope)
+                    ('visible
+                     (cons (window-start)
+                           (window-end)))
+                    ((pred thing-at-point)
+                     (bounds-of-thing-at-point scope))
+                    (_
+                     (cons (point-min)
+                           (point-max))))
                 ;; trim trailing newline
                 (when (= (char-before end) 10)
                   (cl-decf end))
